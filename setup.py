@@ -30,7 +30,9 @@ else:
 
 COMPILE_FLAGS = ['-O3', '-ffast-math', '-march=native', '-std=c99']
 # Cython breaks strict aliasing rules.
-COMPILE_FLAGS += ["-fno-strict-aliasing"]
+COMPILE_FLAGS += ['-fno-strict-aliasing']
+COMPILE_FLAGS += ['-fPIC']
+COMPILE_FLAGS_MSVC = ['/Ox', '/fp:fast']
 
 MACROS = [
     ('BSHUF_VERSION_MAJOR', VERSION_MAJOR),
@@ -113,7 +115,6 @@ ext_bshuf = Extension(
     depends=["src/bitshuffle.h", "src/bitshuffle_core.h",
              "src/iochain.h", "lz4/lz4.h"],
     libraries=[],
-    extra_compile_args=COMPILE_FLAGS,
     define_macros=MACROS,
 )
 
@@ -127,8 +128,7 @@ h5filter = Extension(
              "lz4/lz4.h"],
     define_macros=MACROS,
     **pkgconfig("hdf5", config=dict(
-        include_dirs=["src/", "lz4/"],
-        extra_compile_args=COMPILE_FLAGS))
+        include_dirs=["src/", "lz4/"]))
 )
 
 filter_plugin = Extension(
@@ -141,8 +141,7 @@ filter_plugin = Extension(
              "lz4/lz4.h"],
     define_macros=MACROS,
     **pkgconfig("hdf5", config=dict(
-        include_dirs=["src/", "lz4/"],
-        extra_compile_args=['-fPIC', '-g'] + COMPILE_FLAGS))
+        include_dirs=["src/", "lz4/"]))
 )
 
 lzf_plugin = Extension(
@@ -152,8 +151,7 @@ lzf_plugin = Extension(
     depends=["lzf/lzf_filter.h", "lzf/lzf/lzf.h",
              "lzf/lzf/lzfP.h"],
     **pkgconfig("hdf5", config=dict(
-        include_dirs=["lzf/", "lzf/lzf/"],
-        extra_compile_args=['-fPIC', '-g'] + COMPILE_FLAGS))
+        include_dirs=["lzf/", "lzf/lzf/"]))
 )
 
 
@@ -267,9 +265,12 @@ class build_ext(build_ext_):
             # self.libraries += ['gomp']
             if self.compiler.compiler_type == 'msvc':
                 openmpflag = '/openmp'
+                compileflags = COMPILE_FLAGS_MSVC
             else:
                 openmpflag = '-fopenmp'
+                compileflags = COMPILE_FLAGS
             for e in self.extensions:
+                e.extra_compile_args = list(set(e.extra_compile_args).union(compileflags))
                 if openmpflag not in e.extra_compile_args:
                     e.extra_compile_args += [openmpflag]
                 if openmpflag not in e.extra_link_args:
