@@ -133,39 +133,7 @@ h5filter = Extension(
         include_dirs=["src/", "lz4/"]))
 )
 
-filter_plugin = Extension(
-    "bitshuffle.plugin.libh5bshuf",
-    sources=["src/bshuf_h5plugin.c", "src/bshuf_h5filter.c",
-             "src/bitshuffle.c", "src/bitshuffle_core.c",
-             "src/iochain.c", "lz4/lz4.c"],
-    depends=["src/bitshuffle.h", "src/bitshuffle_core.h",
-             "src/iochain.h", 'src/bshuf_h5filter.h',
-             "lz4/lz4.h"],
-    define_macros=MACROS,
-    **pkgconfig("hdf5", config=dict(
-        include_dirs=["src/", "lz4/"]))
-)
-
-lzf_plugin = Extension(
-    "bitshuffle.plugin.libh5LZF",
-    sources=["src/lzf_h5plugin.c", "lzf/lzf_filter.c",
-             "lzf/lzf/lzf_c.c", "lzf/lzf/lzf_d.c"],
-    depends=["lzf/lzf_filter.h", "lzf/lzf/lzf.h",
-             "lzf/lzf/lzfP.h"],
-    **pkgconfig("hdf5", config=dict(
-        include_dirs=["lzf/", "lzf/lzf/"]))
-)
-
-
 EXTENSIONS = [ext_bshuf, h5filter]
-# Check for plugin hdf5 plugin support (hdf5 >= 1.8.11)
-HDF5_PLUGIN_SUPPORT = False
-for p in ["/usr/include"] + pkgconfig("hdf5")["include_dirs"]:
-    if os.path.exists(os.path.join(p, "H5PLextern.h")):
-        HDF5_PLUGIN_SUPPORT = True
-
-if HDF5_PLUGIN_SUPPORT:
-    EXTENSIONS.extend([filter_plugin, lzf_plugin])
 
 
 class develop(develop_):
