@@ -22,8 +22,8 @@ VERSION_POINT = 4
 VERSION_DEV = 0
 
 VERSION = "%d.%d.%d" % (VERSION_MAJOR, VERSION_MINOR, VERSION_POINT)
-if VERSION_DEV:
-    VERSION = VERSION + ".dev%d" % VERSION_DEV
+if VERSION_DEV or True:
+    VERSION = VERSION + ".dev%d+x" % VERSION_DEV
 
 
 COMPILE_FLAGS = ['-O3', '-ffast-math', '-march=native', '-std=c99']
