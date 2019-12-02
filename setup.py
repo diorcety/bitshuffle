@@ -93,7 +93,7 @@ def pkgconfig(*packages, **kw):
             subprocess.check_output(["pkg-config", package])
         except (subprocess.CalledProcessError, OSError):
             print("Can't find %s with pkg-config fallback to "
-                  "static config" % package)
+                  "static config" % package, file=sys.stderr)
             for distutils_key in flag_map:
                 config.setdefault(distutils_key, []).extend(
                     FALLBACK_CONFIG[distutils_key])
