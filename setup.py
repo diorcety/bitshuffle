@@ -10,6 +10,7 @@ from setuptools.command.build_ext import build_ext as build_ext_
 from setuptools.command.develop import develop as develop_
 from setuptools.command.install import install as install_
 import shutil
+import shlex
 import subprocess
 import sys
 
@@ -233,18 +234,28 @@ class build_ext(build_ext_):
                 print("#################################\n")
             # More portable to pass -fopenmp to linker.
             # self.libraries += ['gomp']
+            if 'OPENMP_CFLAGS' in os.environ or 'OPENMP_LDFLAGS' in os.environ:
+                openmpcflags = shlex.split(os.getenv('OPENMP_CFLAGS', ''), posix=False)
+                openmpldflags = shlex.split(os.getenv('OPENMP_LDFLAGS', ''), posix=False)
+            else:
+                if self.compiler.compiler_type == 'msvc':
+                    openmpcflags = ['/openmp']
+                    openmpldflags = []
+                else:
+                    openmpcflags = ['-fopenmp']
+                    openmpldflags = ['-fopenmp']
             if self.compiler.compiler_type == 'msvc':
-                openmpflag = '/openmp'
                 compileflags = COMPILE_FLAGS_MSVC
             else:
-                openmpflag = '-fopenmp'
                 compileflags = COMPILE_FLAGS
             for e in self.extensions:
                 e.extra_compile_args = list(set(e.extra_compile_args).union(compileflags))
-                if openmpflag not in e.extra_compile_args:
-                    e.extra_compile_args += [openmpflag]
-                if openmpflag not in e.extra_link_args:
-                    e.extra_link_args += [openmpflag]
+                for openmpcflag in openmpcflags:
+                    if openmpcflag not in e.extra_compile_args:
+                        e.extra_compile_args += [openmpcflag]
+                for openmpldflag in openmpldflags:
+                    if openmpldflag not in e.extra_link_args:
+                        e.extra_link_args += [openmpldflag]
 
         build_ext_.build_extensions(self)
 
