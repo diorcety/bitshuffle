@@ -238,13 +238,13 @@ class build_ext(build_ext_):
                 openmpcflags = shlex.split(os.getenv('OPENMP_CFLAGS', ''), posix=False)
                 openmpldflags = shlex.split(os.getenv('OPENMP_LDFLAGS', ''), posix=False)
             else:
-                if self.compiler.compiler_type == 'msvc':
+                if self.compiler.compiler_type == 'msvc' or self.compiler.compiler_type == 'clang-cl':
                     openmpcflags = ['/openmp']
                     openmpldflags = []
                 else:
                     openmpcflags = ['-fopenmp']
                     openmpldflags = ['-fopenmp']
-            if self.compiler.compiler_type == 'msvc':
+            if self.compiler.compiler_type == 'msvc' or self.compiler.compiler_type == 'clang-cl':
                 compileflags = COMPILE_FLAGS_MSVC
             else:
                 compileflags = COMPILE_FLAGS
